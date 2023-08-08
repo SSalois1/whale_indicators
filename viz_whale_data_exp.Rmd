@@ -122,7 +122,7 @@ selected.vars3$prop <- case_when(
 set.seed(123)
 res.km <- kmeans(scale(selected.vars3[, -c(3,4,5)]), 2, nstart = 25)
 # K-means clusters showing the group of each individuals
-res.km$cluster
+# res.km$cluster
 # Dimension reduction using PCA
 res.pca <- prcomp(selected.vars3[,-c(4,5)],  scale = TRUE)
 # Coordinates of individuals
@@ -177,7 +177,7 @@ selected.vars.ow$prop <- case_when(
 set.seed(123)
 res.km <- kmeans(scale(selected.vars.ow[, -c(3,4,5)]), 2, nstart = 25)
 # K-means clusters showing the group of each individuals
-res.km$cluster
+# res.km$cluster
 # Dimension reduction using PCA
 res.pca <- prcomp(selected.vars.ow[,-c(4,5)],  scale = TRUE)
 # Coordinates of individuals
