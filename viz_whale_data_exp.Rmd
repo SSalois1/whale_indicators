@@ -291,6 +291,9 @@ ggscatter(
 ```
  
 #### Other Large Whales:  
+
+**Figure 5.** Cluster plot of other large whales and number of WCRs with shelf
+streamers 
  
 ```{r, kmeans2}
 
