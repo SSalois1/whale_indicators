@@ -198,15 +198,42 @@ g3 +  theme(text = element_text(size = 14),
 
 K-means clustering (MacQueen 1967) is an unsupervised machine learning algorithm 
 for partitioning a given data set into a set of k groups (i.e. k clusters). 
-The value K (the number of groups) is specified ahead of time. The algorithm 
-classifies objects in multiple groups (i.e., clusters), such that **objects within the same cluster are as similar as possible (i.e., high intra-class similarity)**, 
-whereas objects from **different clusters are as dissimilar as possible (i.e., low inter-class similarity)**. In k-means clustering, each cluster is represented by
-its center (i.e, centroid) which corresponds to the mean of points assigned to 
-the cluster.
+The value K (the number of groups) is specified ahead of time.
+
+This clustering is used to classify observations into k groups based on their 
+similarity. Each group is represented by its center (cluster centroid), which 
+correspsonds to the mean of the points assigned to the cluster. 
+
++ **objects within the same cluster are as similar as possible (i.e., high intra-class similarity)**, 
+
++ **objects from different clusters are as dissimilar as possible (i.e., low inter-class similarity)**
 
 More details can be found [here](https://www.datanovia.com/en/lessons/k-means-clustering-in-r-algorith-and-practical-examples/)
 
+
+
 #### Right Whales: 
+
+**Figure 4.** Cluster plot of Right whales and number of WCRs with shelf
+streamers 
+
+Each data point in the following scatter plot is colored  according to its
+cluster assignment. In order to get a better sense of what these clusters 
+represent, qualitative values were assigned to each variable. To do this, first,
+the number of rings associated with a shelf streamer was divided by the total 
+number of rings for a given date. Next, the resulting proportion of rings with
+shelf streamers was categorized as either:
+
++ high (> 0.6, or > %60)
++ moderate (>= 0.3 < 0.6, or 31-59%)
++ low (< 0.3, or < %30)
+
+This allowed me to represent the data points according to whether the rings
+with streamers made up a high (circle), moderate (square), or low (triangle)
+proportion of the total rings present on the day of the whale sighting. 
+
+*Note, only rings west of -65W were counted for this tally. Going forward, we 
+may want to specify a more specific latitudinal and longitudinal range.* 
 
 ```{r, kmean1}
 ### Cluster : Right whales 
@@ -316,4 +343,22 @@ ggscatter(
 ) +
   stat_mean(aes(color = cluster), size = 4)
 ```
+
+
+
+A few caveats to Kmeans clustering: 
+
+1. Assumes prior knowledge of data and requires analyst to choose the appropriate
+number of clusters (k) in advance
+2. Final results are sensitive to initial random selection of cluster centers, 
+outliers, and order of data. 
+- This means, each algorithm run may lead to different clustering results. 
+
+
+
+References: 
+
+###### Hartigan, JA, and MA Wong. 1979. “Algorithm AS 136: A K-means clustering algorithm.” Applied Statistics. Royal Statistical Society, 100–108.
+
+###### MacQueen, J. 1967. “Some Methods for Classification and Analysis of Multivariate Observations.” In Proceedings of the Fifth Berkeley Symposium on Mathematical Statistics and Probability, Volume 1: Statistics, 281–97. Berkeley, Calif.: University of California Press. http://projecteuclid.org:443/euclid.bsmsp/1200512992.
 
