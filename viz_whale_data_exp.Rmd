@@ -58,6 +58,11 @@ tally.long <- df_tally %>%
 
 ### Visualing Offshore Flight Summary Data
 
+**Figure 1.** Total number of whale sightings from Offshore Flight data
+
+Sightings were summed across years. Bars indicate the whale sightings, where red 
+represents right whales, green represents other large whales and yellow indicates unidentified large 
+whales.
 ```{r}
 g = ggplot() +
   geom_col(data = tally.long %>% 
@@ -70,9 +75,9 @@ g = ggplot() +
                     labels = c('Right Whale',
                                'Other Large Whale',
                                'Unidentified Large Whale')) +
-  geom_line(data = tally.long %>% filter(whales =='ttl_whale'), 
-                                  aes(x = factor(year), y = count), size = 1.5, 
-            color = 'black', group = 1) +
+  # geom_line(data = tally.long %>% filter(whales =='ttl_whale'), 
+  #                                 aes(x = factor(year), y = count), size = 1.5, 
+  #           color = 'black', group = 1) +
   xlab('Year') +
   ylab('Number of Whale Sightings (n)') +
   #labs(title = 'Offshore Flight Data Summary')+
@@ -87,9 +92,107 @@ g +  theme(text = element_text(size = 14),
 ```
 
 
+**Figure 2.** Number of whale sightings and number of rings with streamers 
+over time. 
+
+Bars indicate the whale sightings, where red represents right whales, 
+green represents other large whales and yellow indicates unidentified large 
+whales. The black line is the number of rings associated with a shelf streamer
+present (West of -65W) on the date of sighting. Note, I did not have JC charts 
+for all the years, thus the yellow points on top of the black line are showing 
+the years for which I had JC charts to reference. This data is also based on a 
+limited set of JC charts, with most years only having images from Jan-May.  
+
+```{r}
+g2 = ggplot() +
+  geom_col(data = tally.long %>%
+             filter(whales %in% c('ttl_right','ttl_other','ttl_unidentified')),
+           aes(x = factor(year), y = count, fill = whales),
+           size = 1, color = 'black',
+           stat='identity', position='dodge') +
+  scale_fill_manual(values = pal,
+                    name = 'Species',
+                    labels = c('Right Whale',
+                               'Other Large Whale',
+                               'Unidentified Large Whale')) +
+  geom_line(data = tally.long %>% filter(whales =='ttl_streamer_ring'), 
+            aes(x = factor(year), y = count), size = 1.5, 
+            color = 'black', group = 1) +
+  geom_point(data = tally.long %>% filter(whales =='ttl_streamer_ring' & year %in% c(2014, 2016, 2017, 2019, 2020, 2021, 2022,2023 )), 
+             aes(x = factor(year), y = count), bg = 'yellow', size = 3, pch = 21,
+             color = 'black', group = 1) +
+  #scale_y_continuous(sec.axis = sec_axis(~., name = 'Catch (lbs)')) + 
+  xlab('Year') +
+  ylab('Number of Whale Sightings / Number of Rings w/Streamer') +
+  #labs(title = 'Offshore Flight Data Summary')+
+  theme_classic()  
+g2 +  theme(text = element_text(size = 14), 
+           axis.text = element_text(size = 13), 
+           axis.title = element_text(size = 15),
+           legend.position = c(0.25, 0.85),
+           legend.background = element_rect(fill = "white", color = "black"), 
+           legend.title = element_text(size = 11),
+           legend.text = element_text(size = 11))
+
+```
+
+
+**Figure 3.** Number of whale sightings and percentage of rings with streamers 
+over time. 
+
+Bars indicate the whale sightings, where red represents right whales, 
+green represents other large whales and yellow indicates unidentified large 
+whales. The black line is the percentage of all rings present (West of -65) that 
+were associated with a shelf streamer on the given date of sighting. Note, 
+I did not have JC charts for all the years, thus the yellow points on top of 
+the black line are showing the years for which I had JC charts to reference.
+This data is also based on a limited set of JC charts, with most years only
+having images from Jan-May. 
+
+```{r}
+g3 = ggplot() +
+  geom_col(data = tally.long %>% 
+             filter(whales %in% c('ttl_right','ttl_other','ttl_unidentified')),
+           aes(x = factor(year), y = count, fill = whales), 
+           size = 1, color = 'black',
+           stat='identity', position='dodge') +
+  scale_fill_manual(values = pal,
+                    name = 'Species',
+                    labels = c('Right Whale',
+                               'Other Large Whale',
+                               'Unidentified Large Whale')) +
+  geom_line(data = tally.long %>% filter(whales =='prop_stream_ring'), 
+            aes(x = factor(year), y = count*100), size = 1.5, 
+            color = 'black', group = 1) +
+  geom_point(data = tally.long %>% filter(whales =='prop_stream_ring' & year %in% c(2014, 2016, 2017, 2019, 2020, 2021, 2022,2023 )), 
+             aes(x = factor(year), y = count*100), bg = 'yellow', size = 3, pch = 21,
+             color = 'black', group = 1) +
+  scale_y_continuous(sec.axis = sec_axis(~., name = 'Proportion of rings w/streamer')) + 
+  xlab('Year') +
+  ylab('Number of Whale Sightings / Number of Rings w/Streamer') +
+  #labs(title = 'Offshore Flight Data Summary')+
+  theme_classic()  
+g3 +  theme(text = element_text(size = 14), 
+           axis.text = element_text(size = 13), 
+           axis.title = element_text(size = 15),
+           legend.position = c(0.25, 0.85),
+           legend.background = element_rect(fill = "white", color = "black"), 
+           legend.title = element_text(size = 11),
+           legend.text = element_text(size = 11))
+```
+
+
+
+
 ### Kmeans clustering 
 
-K-means clustering (MacQueen 1967) is an unsupervised machine learning algorithm for partitioning a given data set into a set of k groups (i.e. k clusters). The analyst specifies k (the number of groups) pre-hoc. The algorithm classifies objects in multiple groups (i.e., clusters), such that **objects within the same cluster are as similar as possible (i.e., high intra-class similarity)**, whereas objects from **different clusters are as dissimilar as possible (i.e., low inter-class similarity)**. In k-means clustering, each cluster is represented by its center (i.e, centroid) which corresponds to the mean of points assigned to the cluster.
+K-means clustering (MacQueen 1967) is an unsupervised machine learning algorithm 
+for partitioning a given data set into a set of k groups (i.e. k clusters). 
+The value K (the number of groups) is specified ahead of time. The algorithm 
+classifies objects in multiple groups (i.e., clusters), such that **objects within the same cluster are as similar as possible (i.e., high intra-class similarity)**, 
+whereas objects from **different clusters are as dissimilar as possible (i.e., low inter-class similarity)**. In k-means clustering, each cluster is represented by
+its center (i.e, centroid) which corresponds to the mean of points assigned to 
+the cluster.
 
 More details can be found [here](https://www.datanovia.com/en/lessons/k-means-clustering-in-r-algorith-and-practical-examples/)
 
@@ -97,40 +200,40 @@ More details can be found [here](https://www.datanovia.com/en/lessons/k-means-cl
 
 ```{r}
 ### Cluster : Right whales 
-selected.vars3 <- df.21.23[, c('right_whale_sight', 
+selected.vars <- df[, c('right_whale_sight', 
                               'num_ring_with_streamer',
                               'num_ring', 'prop.streamering')]
 # remove NAs for kmeans to work 
-selected.vars3 <- na.omit(selected.vars3)
+selected.vars <- na.omit(selected.vars)
 # optimal number of clusters:   
-fviz_nbclust(selected.vars3[,-c(3,4,5)], kmeans, method = "silhouette")
+fviz_nbclust(selected.vars[,-c(3,4)], kmeans, method = "silhouette")
 
 # -- Assigning a catagorical attribute to better understand clusters -- #
 # Using proportion of rings that are associated with streamers
 ## High low ##
-# selected.vars3$prop <- case_when(
-#   selected.vars3$prop.streamering >= .5 ~ 'high',
-#   selected.vars3$prop.streamering < .5 ~ 'low'
+# selected.vars$prop <- case_when(
+#   selected.vars$prop.streamering >= .5 ~ 'high',
+#   selected.vars$prop.streamering < .5 ~ 'low'
 # )
 ## High med low ##
-selected.vars3$prop <- case_when(
-  selected.vars3$prop.streamering >= .6 ~ 'high',
-  selected.vars3$prop.streamering >= .3 & selected.vars3$prop.streamering < .6 ~ 'mod',
-  selected.vars3$prop.streamering <= .3 ~ 'low'
+selected.vars$prop <- case_when(
+  selected.vars$prop.streamering >= .6 ~ 'high',
+  selected.vars$prop.streamering >= .3 & selected.vars$prop.streamering < .6 ~ 'mod',
+  selected.vars$prop.streamering <= .3 ~ 'low'
 )
 # Compute k-means with k = 2
 set.seed(123)
-res.km <- kmeans(scale(selected.vars3[, -c(3,4,5)]), 2, nstart = 25)
+res.km <- kmeans(scale(selected.vars[, -c(3,4,5)]), 2, nstart = 25)
 # K-means clusters showing the group of each individuals
 # res.km$cluster
 # Dimension reduction using PCA
-res.pca <- prcomp(selected.vars3[,-c(4,5)],  scale = TRUE)
+res.pca <- prcomp(selected.vars[,-c(3,4,5)],  scale = TRUE)
 # Coordinates of individuals
 ind.coord <- as.data.frame(get_pca_ind(res.pca)$coord)
 # Add clusters obtained using the K-means algorithm
 ind.coord$cluster <- factor(res.km$cluster)
 # Add Species groups from the original data sett
-ind.coord$prop <- selected.vars3$prop
+ind.coord$prop <- selected.vars$prop
 # Data inspection
 head(ind.coord)
 
@@ -155,12 +258,12 @@ ggscatter(
 ```{r}
 
 ### Cluster : Other whales 
-selected.vars.ow <- df.21.23[, c('other_whale_sight', 
+selected.vars.ow <- df[, c('other_whale_sight', 
                                'num_ring_with_streamer',
                                'num_ring', 'prop.streamering')]
 selected.vars.ow <- na.omit(selected.vars.ow)
 # optimal number of clusters:   
-fviz_nbclust(selected.vars.ow[,-c(3,4,5)], kmeans, method = "silhouette")
+fviz_nbclust(selected.vars.ow[,-c(3,4)], kmeans, method = "silhouette")
 
 # High low
 selected.vars.ow$prop <- case_when(
@@ -173,13 +276,13 @@ selected.vars.ow$prop <- case_when(
   selected.vars.ow$prop.streamering >= .3 & selected.vars.ow$prop.streamering < .6 ~ 'mod',
   selected.vars.ow$prop.streamering <= .3 ~ 'low'
 )
-# Compute k-means with k = 2
+# Compute k-means with k = 3
 set.seed(123)
-res.km <- kmeans(scale(selected.vars.ow[, -c(3,4,5)]), 2, nstart = 25)
+res.km <- kmeans(scale(selected.vars.ow[, -c(3,4,5)]), 3, nstart = 25)
 # K-means clusters showing the group of each individuals
 # res.km$cluster
 # Dimension reduction using PCA
-res.pca <- prcomp(selected.vars.ow[,-c(4,5)],  scale = TRUE)
+res.pca <- prcomp(selected.vars.ow[,-c(3,4,5)],  scale = TRUE)
 # Coordinates of individuals
 ind.coord <- as.data.frame(get_pca_ind(res.pca)$coord)
 # Add clusters obtained using the K-means algorithm

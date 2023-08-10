@@ -11,17 +11,22 @@ df<- df %>%
   mutate(date = lubridate::mdy(date),
          year = lubridate::year(date), 
          week = lubridate::week(date))
-df.21.23 <- df %>% filter(year %in% c(2021:2023)) %>%
-  mutate(num_ring = as.integer(num_ring))
 
-df.21.23$prop.streamering <- (df.21.23$num_ring_with_streamer)/(df.21.23$num_ring)
+df$prop.streamering <- (df$num_ring_with_streamer)/(df$num_ring)
+
+#df.21.23 <- df %>% filter(year %in% c(2021:2023))
+#df.21.23$prop.streamering <- (df.21.23$num_ring_with_streamer)/(df.21.23$num_ring)
+
 df_tally <- df %>%
   group_by(year) %>%
   summarise(ttl_right = sum(na.omit(right_whale_sight)), 
             ttl_other = sum(na.omit(other_whale_sight)), 
-            ttl_unidentified = sum(na.omit(unidentified_whale_sight)))
-
+            ttl_unidentified = sum(na.omit(unidentified_whale_sight)),
+            ttl_streamer_ring = sum(na.omit(num_ring_with_streamer)), 
+            ttl_ring = sum(na.omit(num_ring)))
+df_tally$prop_stream_ring <- df_tally$ttl_streamer_ring/df_tally$ttl_ring
 df_tally$ttl_whale <- rowSums(df_tally[,c(2:4)])
+
 tally.long <- df_tally %>%
   pivot_longer(ttl_right:ttl_whale, names_to = 'whales', values_to = 'count')
 
@@ -50,7 +55,67 @@ g +  theme(text = element_text(size = 14),
          legend.background = element_rect(fill = "white", color = "black"), 
          legend.title = element_text(size = 11),
          legend.text = element_text(size = 11))
+### Plot number of rings with streamer 
+g2 = ggplot() +
+  # geom_rect(aes(xmin = '2014', xmax = '2014', ymin = 0, ymax = 100),
+  #           fill = 'lightgrey',color = 'grey95', alpha = 0.8) +
+  # geom_rect(aes(xmin = '2016', xmax = '2017', ymin = 0, ymax = 100),
+  #           fill = 'lightgrey', color = 'grey95', alpha = 0.8) +
+  # geom_rect(aes(xmin = '2019', xmax = '2023', ymin = 0, ymax = 100),
+  #           fill = 'lightgrey', color = 'grey95', alpha = 0.8) +
+  geom_col(data = tally.long %>%
+             filter(whales %in% c('ttl_right','ttl_other','ttl_unidentified')),
+           aes(x = factor(year), y = count, fill = whales),
+           size = 1, color = 'black',
+           stat='identity', position='dodge') +
+  scale_fill_manual(values = pal,
+                    name = 'Species',
+                    labels = c('Right Whale',
+                               'Other Large Whale',
+                               'Unidentified Large Whale')) +
+  geom_line(data = tally.long %>% filter(whales =='ttl_streamer_ring'), 
+            aes(x = factor(year), y = count), size = 1.5, 
+            color = 'black', group = 1) +
+  geom_point(data = tally.long %>% filter(whales =='ttl_streamer_ring' & year %in% c(2014, 2016, 2017, 2019, 2020, 2021, 2022,2023 )), 
+             aes(x = factor(year), y = count), bg = 'yellow', size = 3, pch = 21,
+             color = 'black', group = 1) +
+  #scale_y_continuous(sec.axis = sec_axis(~., name = 'Catch (lbs)')) + 
+  xlab('Year') +
+  ylab('Number of Whale Sightings / Number of Rings w/Streamer') +
+  #labs(title = 'Offshore Flight Data Summary')+
+  theme_classic()  
+g2 +  theme(text = element_text(size = 14), 
+           axis.text = element_text(size = 13), 
+           axis.title = element_text(size = 15),
+           legend.position = c(0.25, 0.85),
+           legend.background = element_rect(fill = "white", color = "black"), 
+           legend.title = element_text(size = 11),
+           legend.text = element_text(size = 11))
 
+
+
+ggplot() +
+  geom_col(data = tally.long %>% 
+             filter(whales %in% c('ttl_right','ttl_other','ttl_unidentified')),
+           aes(x = factor(year), y = count, fill = whales), 
+           size = 1, color = 'black',
+           stat='identity', position='dodge') +
+  scale_fill_manual(values = pal,
+                    name = 'Species',
+                    labels = c('Right Whale',
+                               'Other Large Whale',
+                               'Unidentified Large Whale')) +
+  geom_line(data = tally.long %>% filter(whales =='prop_stream_ring'), 
+            aes(x = factor(year), y = count*100), size = 1.5, 
+            color = 'black', group = 1) +
+  geom_point(data = tally.long %>% filter(whales =='prop_stream_ring' & year %in% c(2014, 2016, 2017, 2019, 2020, 2021, 2022,2023 )), 
+             aes(x = factor(year), y = count*100), bg = 'yellow', size = 3, pch = 21,
+             color = 'black', group = 1) +
+  scale_y_continuous(sec.axis = sec_axis(~., name = 'Proportion of rings w/streamer')) + 
+  xlab('Year') +
+  ylab('Number of Whale Sightings / Number of Rings w/Streamer') +
+  #labs(title = 'Offshore Flight Data Summary')+
+  theme_classic()  
 ### K Means
 
 palette(c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3",
