@@ -1,6 +1,5 @@
 ---
-title: "whale_data_exploration"
-author: "Sarah Salois"
+title: 'Preliminary look at whale sighting data'
 output: 
  html_document:
     code_fold: hide
@@ -57,6 +56,15 @@ tally.long <- df_tally %>%
   pivot_longer(ttl_right:ttl_whale, names_to = 'whales', values_to = 'count')
 
 ```
+
+This is just a very quick preliminary look at the data we have available so far. 
+This work mostly compares number of whale sightings to number of warm core 
+rings associated with the date of the whale sighting. If there was not a JC chart
+for the exact date of the sighting I used the available chart from the closest 
+date prior to the sighting. For instance, if a whale was sighted on 5/5/23, and 
+there is not a chart on that day, I used a chart from 5/4/23 or 5/3/23. 
+
+
 
 ### Visualing Offshore Flight Summary Data
 
