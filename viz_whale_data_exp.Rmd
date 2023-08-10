@@ -14,7 +14,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ```
 
-```{r}
+```{r, libraries}
 library(dplyr)
 library(lubridate)
 library(ggplot2)
@@ -38,21 +38,23 @@ df<- df %>%
   mutate(date = lubridate::mdy(date),
          year = lubridate::year(date), 
          week = lubridate::week(date))
-df.21.23 <- df %>% filter(year %in% c(2021:2023)) %>%
-  mutate(num_ring = as.integer(num_ring))
+# df.21.23 <- df %>% filter(year %in% c(2021:2023)) %>%
+#  mutate(num_ring = as.integer(num_ring))
 # create a variable for proportion of rings associated with streamer
-df.21.23$prop.streamering <- (df.21.23$num_ring_with_streamer)/(df.21.23$num_ring)
+# df.21.23$prop_stream_ring <- (df.21.23$num_ring_with_streamer)/(df.21.23$num_ring)
+df$prop_stream_ring <- (df$num_ring_with_streamer)/(df$num_ring)
 df_tally <- df %>%
   group_by(year) %>%
   summarise(ttl_right = sum(na.omit(right_whale_sight)), 
             ttl_other = sum(na.omit(other_whale_sight)), 
-            ttl_unidentified = sum(na.omit(unidentified_whale_sight)))
-
+            ttl_unidentified = sum(na.omit(unidentified_whale_sight)),
+            ttl_streamer_ring = sum(na.omit(num_ring_with_streamer)), 
+            ttl_ring = sum(na.omit(num_ring)))
+df_tally$prop_stream_ring <- df_tally$ttl_streamer_ring/df_tally$ttl_ring
 df_tally$ttl_whale <- rowSums(df_tally[,c(2:4)])
+
 tally.long <- df_tally %>%
   pivot_longer(ttl_right:ttl_whale, names_to = 'whales', values_to = 'count')
-
-
 
 ```
 
@@ -63,7 +65,7 @@ tally.long <- df_tally %>%
 Sightings were summed across years. Bars indicate the whale sightings, where red 
 represents right whales, green represents other large whales and yellow indicates unidentified large 
 whales.
-```{r}
+```{r, fig1}
 g = ggplot() +
   geom_col(data = tally.long %>% 
              filter(whales %in% c('ttl_right','ttl_other','ttl_unidentified')),
@@ -103,7 +105,7 @@ for all the years, thus the yellow points on top of the black line are showing
 the years for which I had JC charts to reference. This data is also based on a 
 limited set of JC charts, with most years only having images from Jan-May.  
 
-```{r}
+```{r, fig2}
 g2 = ggplot() +
   geom_col(data = tally.long %>%
              filter(whales %in% c('ttl_right','ttl_other','ttl_unidentified')),
@@ -149,7 +151,7 @@ the black line are showing the years for which I had JC charts to reference.
 This data is also based on a limited set of JC charts, with most years only
 having images from Jan-May. 
 
-```{r}
+```{r, fig3}
 g3 = ggplot() +
   geom_col(data = tally.long %>% 
              filter(whales %in% c('ttl_right','ttl_other','ttl_unidentified')),
@@ -198,11 +200,11 @@ More details can be found [here](https://www.datanovia.com/en/lessons/k-means-cl
 
 #### Right Whales: 
 
-```{r}
+```{r, kmean1}
 ### Cluster : Right whales 
 selected.vars <- df[, c('right_whale_sight', 
                               'num_ring_with_streamer',
-                              'num_ring', 'prop.streamering')]
+                              'num_ring', 'prop_stream_ring')]
 # remove NAs for kmeans to work 
 selected.vars <- na.omit(selected.vars)
 # optimal number of clusters:   
@@ -212,14 +214,14 @@ fviz_nbclust(selected.vars[,-c(3,4)], kmeans, method = "silhouette")
 # Using proportion of rings that are associated with streamers
 ## High low ##
 # selected.vars$prop <- case_when(
-#   selected.vars$prop.streamering >= .5 ~ 'high',
-#   selected.vars$prop.streamering < .5 ~ 'low'
+#   selected.vars$prop_stream_ring >= .5 ~ 'high',
+#   selected.vars$prop_stream_ring < .5 ~ 'low'
 # )
 ## High med low ##
 selected.vars$prop <- case_when(
-  selected.vars$prop.streamering >= .6 ~ 'high',
-  selected.vars$prop.streamering >= .3 & selected.vars$prop.streamering < .6 ~ 'mod',
-  selected.vars$prop.streamering <= .3 ~ 'low'
+  selected.vars$prop_stream_ring >= .6 ~ 'high',
+  selected.vars$prop_stream_ring >= .3 & selected.vars$prop_stream_ring < .6 ~ 'mod',
+  selected.vars$prop_stream_ring <= .3 ~ 'low'
 )
 # Compute k-means with k = 2
 set.seed(123)
@@ -255,26 +257,26 @@ ggscatter(
  
 #### Other Large Whales:  
  
-```{r}
+```{r, kmeans2}
 
 ### Cluster : Other whales 
 selected.vars.ow <- df[, c('other_whale_sight', 
                                'num_ring_with_streamer',
-                               'num_ring', 'prop.streamering')]
+                               'num_ring', 'prop_stream_ring')]
 selected.vars.ow <- na.omit(selected.vars.ow)
 # optimal number of clusters:   
 fviz_nbclust(selected.vars.ow[,-c(3,4)], kmeans, method = "silhouette")
 
 # High low
 selected.vars.ow$prop <- case_when(
-  selected.vars.ow$prop.streamering >= .5 ~ 'high',
-  selected.vars.ow$prop.streamering < .5 ~ 'low'
+  selected.vars.ow$prop_stream_ring >= .5 ~ 'high',
+  selected.vars.ow$prop_stream_ring < .5 ~ 'low'
 )
 # High med low
 selected.vars.ow$prop <- case_when(
-  selected.vars.ow$prop.streamering >= .6 ~ 'high',
-  selected.vars.ow$prop.streamering >= .3 & selected.vars.ow$prop.streamering < .6 ~ 'mod',
-  selected.vars.ow$prop.streamering <= .3 ~ 'low'
+  selected.vars.ow$prop_stream_ring >= .6 ~ 'high',
+  selected.vars.ow$prop_stream_ring >= .3 & selected.vars.ow$prop_stream_ring < .6 ~ 'mod',
+  selected.vars.ow$prop_stream_ring <= .3 ~ 'low'
 )
 # Compute k-means with k = 3
 set.seed(123)
